@@ -11,13 +11,12 @@ project_root = current_dir
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from Auth.auth_json_module import auth_ui
+from auth.auth_json_module import auth_ui
 from Schema_mapper.schema_mapper import infer_field_roles, map_template_fields
 from Dashboard.dashboard_generator import generate_kpi, generate_line, generate_bar, generate_pie
 from Insight.insight_engine import basic_kpi_insights
 from ui.input_ui import render_input_ui, load_dataframe
 from ui.output_ui import render_results, render_topbar, run_processing
-
 
 # --- Streamlit config ---
 st.set_page_config(page_title="Insighto Agent", layout="wide")
