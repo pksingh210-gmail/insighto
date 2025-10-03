@@ -38,7 +38,7 @@ if st.session_state.get("logout_request", False):
         if key in st.session_state:
             del st.session_state[key]
     st.session_state.logout_request = False
-    st.experimental_rerun()
+    st.rerun()
 
 # --- Show login if not logged in ---
 if not st.session_state.get("logged_in", False):
@@ -94,7 +94,7 @@ with left_col:
                 for key in keys_to_reset:
                     if key in st.session_state:
                         del st.session_state[key]
-                st.experimental_rerun()
+                st.rerun()
         else:
             st.markdown("<div style='color:gray;'>🔄 Reset (no results)</div>", unsafe_allow_html=True)
 
