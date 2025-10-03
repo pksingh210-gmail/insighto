@@ -7,7 +7,7 @@ import extra_streamlit_components as stx
 import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
-auth_dir = os.path.join(current_dir, "Auth")
+auth_dir = os.path.join(current_dir, "auth")
 if auth_dir not in sys.path:
     sys.path.append(auth_dir)
 
@@ -176,6 +176,7 @@ def auth_ui():
         signup_tab()
     
     return False  # Not admin
+
 
 
 
