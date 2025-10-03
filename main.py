@@ -1,15 +1,15 @@
+import os
+import sys
 import streamlit as st
 import pandas as pd
 import json
-import os
-import sys
 import time
 
-# --- Auth module path ---
+# --- Add project root so packages are discoverable ---
 current_dir = os.path.dirname(os.path.abspath(__file__))
-auth_dir = os.path.join(current_dir, "Auth")
-if auth_dir not in sys.path:
-    sys.path.append(auth_dir)
+project_root = current_dir
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
 from Auth.auth_json_module import auth_ui
 from Schema_mapper.schema_mapper import infer_field_roles, map_template_fields
@@ -17,6 +17,7 @@ from Dashboard.dashboard_generator import generate_kpi, generate_line, generate_
 from Insight.insight_engine import basic_kpi_insights
 from ui.input_ui import render_input_ui, load_dataframe
 from ui.output_ui import render_results, render_topbar, run_processing
+
 
 # --- Streamlit config ---
 st.set_page_config(page_title="Insighto Agent", layout="wide")
