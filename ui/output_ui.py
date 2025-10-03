@@ -62,7 +62,8 @@ def render_results(df=None, kpi_results=None, chart_results=None, insight_result
         # --- Insights tab ---
         with tab_insights:
             for i, ins in enumerate(insight_results):
-                st.write(f"**Insight {i+1}:** {ins}", key=f"insight_{i}")
+                placeholder = st.empty()  # can optionally store in a dict with keys
+                placeholder.write(f"**Insight {i+1}:** {ins}")
 
         # --- Data Preview tab ---
         with tab_data:
@@ -159,3 +160,4 @@ def run_processing(file_info, current_dir):
     st.session_state["kpi_results"] = kpi_results
     st.session_state["chart_results"] = chart_results
     st.session_state["insight_results"] = insight_results
+
