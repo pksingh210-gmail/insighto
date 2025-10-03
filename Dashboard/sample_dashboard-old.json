@@ -1,0 +1,42 @@
+{
+  "title": "Retail Bank - Sample Dashboard",
+  "layout": [
+    {
+      "id": "kpi_total_volume",
+      "type": "kpi",
+      "title": "Total Transaction Volume",
+      "value_field": "amount",
+      "agg": "sum"
+    },
+    {
+      "id": "kpi_monthly_avg",
+      "type": "kpi",
+      "title": "Average Transaction (abs)",
+      "value_field": "amount",
+      "agg": "mean_abs"
+    },
+    {
+      "id": "chart_monthly_trend",
+      "type": "line",
+      "title": "Monthly Net Amount",
+      "date_field": "transaction_date",
+      "value_field": "amount",
+      "time_granularity": "M"
+    },
+    {
+      "id": "chart_top_merchants",
+      "type": "bar",
+      "title": "Top Merchants by Absolute Amount",
+      "group_field": "merchant",
+      "value_field": "amount",
+      "top_n": 5
+    },
+    {
+      "id": "chart_category_breakdown",
+      "type": "pie",
+      "title": "Category Breakdown",
+      "group_field": "category",
+      "value_field": "amount"
+    }
+  ]
+}
