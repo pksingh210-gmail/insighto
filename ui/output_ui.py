@@ -48,8 +48,6 @@ def render_results(df=None, kpi_results=None, chart_results=None, insight_result
             st.session_state["run_agent"] = False
             st.rerun()
 
-
-
     # --- Original results rendering ---
     if df is not None:
         tab_dashboard, tab_insights, tab_data = st.tabs(
@@ -75,7 +73,7 @@ def render_results(df=None, kpi_results=None, chart_results=None, insight_result
         # --- Insights tab ---
         with tab_insights:
             for i, ins in enumerate(insight_results):
-                st.write(f"**Insight {i+1}:** {ins}", key=f"insight_{i}")
+                st.markdown(f"**Insight {i+1}:** {ins}", unsafe_allow_html=True)
 
         # --- Data Preview tab ---
         with tab_data:
@@ -171,3 +169,4 @@ def run_processing(file_info, current_dir):
     st.session_state["kpi_results"] = kpi_results
     st.session_state["chart_results"] = chart_results
     st.session_state["insight_results"] = insight_results
+
