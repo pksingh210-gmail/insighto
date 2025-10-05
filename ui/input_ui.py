@@ -3,8 +3,13 @@ import pandas as pd
 import streamlit as st
 from Data_loader.data_loader import read_sql_table
 
+
 def render_input_ui(current_dir):
     st.markdown("### <span style='color:darkblue;font-weight:bold;'>Input Parameters</span>", unsafe_allow_html=True)
+
+    # --- Initialize button states ---
+    if "run_clicked" not in st.session_state:
+        st.session_state["run_clicked"] = False  # Run button active initially
 
     # Step 1: Choose data source
     st.markdown("#### <span style='color:blue;font-weight:bold;'>Choose Data Source</span>", unsafe_allow_html=True)
@@ -42,9 +47,30 @@ def render_input_ui(current_dir):
     st.file_uploader("Upload sample dashboard image or PDF", type=["png", "jpg", "jpeg", "pdf"], key="sample_upload")
     st.text_area("Dashboard or report requirement", placeholder="Write your requirements here...", key="report_req")
 
-    # Step 4: Run Agent button
-    run_agent = st.button("🚀 Run Agent", key="run_agent_btn")
+    # Step 4: Run Agent + Reset button inline
+    col_run, col_gap, col_reset = st.columns([1, 0.5, 1], gap="medium")
+    run_agent = False
+
+    # --- Run Agent Button ---
+    with col_run:
+        if st.button("🚀Run Agent", key="run_agent_btn", use_container_width=True, disabled=st.session_state["run_clicked"]):
+            st.session_state["run_clicked"] = True
+            run_agent = True
+
+
+    # --- Reset Button ---
+    with col_reset:
+        reset_disabled = not st.session_state["run_clicked"]
+        if st.button("🔄Reset", key="reset_btn", use_container_width=True, disabled=reset_disabled):
+            keys_to_keep = ["initialized", "logged_in", "user"]
+            for k in list(st.session_state.keys()):
+                if k not in keys_to_keep:
+                    del st.session_state[k]
+            st.session_state["run_clicked"] = False  # Re-enable Run button
+            st.rerun()
+
     return file_info, run_agent
+
 
 def load_dataframe(file_info):
     """Load the actual DataFrame only when needed."""
