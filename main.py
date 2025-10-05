@@ -11,7 +11,7 @@ auth_dir = os.path.join(current_dir, "Auth")
 if auth_dir not in sys.path:
     sys.path.append(auth_dir)
 
-from Auth.auth_json_module import auth_ui
+from auth.auth_json_module import auth_ui
 from Schema_mapper.schema_mapper import infer_field_roles, map_template_fields
 from Dashboard.dashboard_generator import generate_kpi, generate_line, generate_bar, generate_pie
 from Insight.insight_engine import basic_kpi_insights
