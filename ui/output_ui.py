@@ -9,7 +9,7 @@ from Insight.insight_engine import basic_kpi_insights
 
 def render_topbar():
     user = st.session_state.get("user", {})
-    full_name = user.get("name", "User")  # Pull directly from logged-in user
+    full_name = user.get("name", "")  # Pull directly from logged-in user
 
     st.markdown(
         f"""
@@ -26,21 +26,34 @@ def render_topbar():
 def render_results(df=None, kpi_results=None, chart_results=None, insight_results=None):
     # --- Heading with Logout button aligned right ---
     col1, col2 = st.columns([8, 1])
+
     with col1:
-        st.markdown("### <span style='color:darkblue;font-weight:bold;'>Results</span>", unsafe_allow_html=True)
+        st.markdown(
+            "### <span style='color:darkblue;font-weight:bold;'>Results</span>", 
+            unsafe_allow_html=True
+        )
         # Dedicated placeholder below heading for dynamic messages
         if "results_status_placeholder" not in st.session_state:
             st.session_state["results_status_placeholder"] = st.empty()
+
     with col2:
-        if st.button("Logout", key="logout", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.user = {}
+        # Handle logout click in Streamlit way
+        if st.button("🚪Logout", key="logout_btn_hidden", help="Logout", use_container_width=False):
+            # Keep only initialization keys
+            keys_to_keep = ["initialized"]
+            for k in list(st.session_state.keys()):
+                if k not in keys_to_keep:
+                    del st.session_state[k]
+            # Also ensure run_agent flag is cleared
+            st.session_state["run_agent"] = False
             st.rerun()
+
+
 
     # --- Original results rendering ---
     if df is not None:
         tab_dashboard, tab_insights, tab_data = st.tabs(
-            ["📊 Dashboard", "💡 Insights", "📄 Data Preview"]
+            ["📊Dashboard", "💡Insights", "📄Data Preview"]
         )
 
         # --- Dashboard tab ---
@@ -62,8 +75,7 @@ def render_results(df=None, kpi_results=None, chart_results=None, insight_result
         # --- Insights tab ---
         with tab_insights:
             for i, ins in enumerate(insight_results):
-                placeholder = st.empty()  # can optionally store in a dict with keys
-                placeholder.write(f"**Insight {i+1}:** {ins}")
+                st.write(f"**Insight {i+1}:** {ins}", key=f"insight_{i}")
 
         # --- Data Preview tab ---
         with tab_data:
@@ -72,7 +84,6 @@ def render_results(df=None, kpi_results=None, chart_results=None, insight_result
     else:
         # Show initial message in status box
         st.session_state["results_status_placeholder"].info("Please provide input data and click 'Run Agent'.")
-
 
 # --- New function to handle dynamic processing with spinner ---
 def run_processing(file_info, current_dir):
@@ -83,15 +94,15 @@ def run_processing(file_info, current_dir):
 
     # --- Define dynamic steps ---
     steps = [
-        ("📂 Loading data", lambda: load_dataframe(file_info)),
-        ("🔍 Inferring field roles", lambda: infer_field_roles(df)),
-        ("🗺️ Mapping template fields", lambda: map_template_fields(
+        ("📂Loading data", lambda: load_dataframe(file_info)),
+        ("🔍Inferring field roles", lambda: infer_field_roles(df)),
+        ("🗺️Mapping template fields", lambda: map_template_fields(
             json.load(open(os.path.join(current_dir, "Dashboard", "sample_dashboard.json"))) if os.path.exists(os.path.join(current_dir, "Dashboard", "sample_dashboard.json")) else {"title": "Generated Dashboard","layout": []},
             roles
         )),
-        ("📊 Generating KPIs", lambda: [generate_kpi(df, c, mapping) for c in json.load(open(os.path.join(current_dir, "Dashboard", "sample_dashboard.json"))) if c.get("type")=="kpi"]),
-        ("📈 Generating Charts", lambda: []),  # handled separately below
-        ("💡 Generating Insights", lambda: basic_kpi_insights(df))
+        ("📊Generating KPIs", lambda: [generate_kpi(df, c, mapping) for c in json.load(open(os.path.join(current_dir, "Dashboard", "sample_dashboard.json"))) if c.get("type")=="kpi"]),
+        ("📈Generating Charts", lambda: []),  # handled separately below
+        ("💡Generating Insights", lambda: basic_kpi_insights(df))
     ]
 
     # Step 1: Load Data
@@ -122,7 +133,7 @@ def run_processing(file_info, current_dir):
     kpis = [c for c in template.get("layout", []) if c.get("type")=="kpi"]
     with status_box.container():
         for i, comp in enumerate(kpis):
-            with st.spinner(f"📊 Generating KPI {i+1}/{len(kpis)}..."):
+            with st.spinner(f"📊Generating KPI {i+1}/{len(kpis)}..."):
                 kpi_results.append(generate_kpi(df, comp, mapping))
                 time.sleep(0.5)
 
@@ -144,7 +155,7 @@ def run_processing(file_info, current_dir):
         func = chart_func_map.get(chart_type)
         if func:
             with status_box:
-                with st.spinner(f"📈 Generating {chart_type} chart {i+1}/{len(charts)}..."):
+                with st.spinner(f"📈Generating {chart_type} chart {i+1}/{len(charts)}..."):
                     fig = func(df, comp, mapping)
                     chart_results.append((chart_type, fig))
                     time.sleep(1.0)
@@ -160,4 +171,3 @@ def run_processing(file_info, current_dir):
     st.session_state["kpi_results"] = kpi_results
     st.session_state["chart_results"] = chart_results
     st.session_state["insight_results"] = insight_results
-
