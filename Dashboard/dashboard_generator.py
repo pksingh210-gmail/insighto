@@ -8,7 +8,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
-
 # ---------- Helper ----------
 def _empty_figure(title: str = "No data available") -> go.Figure:
     """Return an empty Plotly figure with a centered message."""
@@ -25,8 +24,16 @@ def _empty_figure(title: str = "No data available") -> go.Figure:
         yaxis=dict(visible=False),
         plot_bgcolor="white"
     )
-    return fig
+    return _scale_chart(fig)  # Scale empty figure too
 
+def _scale_chart(fig: go.Figure, scale: float = 0.5):
+    """
+    Scale the width and height of a Plotly figure by a factor (default 0.5)
+    """
+    width = fig.layout.width or 700   # default width if not set
+    height = fig.layout.height or 450 # default height if not set
+    fig.update_layout(width=int(width * scale), height=int(height * scale))
+    return fig
 
 # ---------- KPI ----------
 def generate_kpi(df: pd.DataFrame, comp: Dict, mapping: Dict) -> Dict:
@@ -44,44 +51,44 @@ def generate_kpi(df: pd.DataFrame, comp: Dict, mapping: Dict) -> Dict:
         v = df[val_field].sum()
     return {"title": comp.get("title"), "value": round(float(v), 2)}
 
-
 # ---------- Charts ----------
 def generate_line(df: pd.DataFrame, comp: Dict, mapping: Dict):
     date_field = mapping.get(comp.get("date_field")) or mapping.get(f"{comp.get('id')}.date_field")
     val_field = mapping.get(comp.get("value_field")) or mapping.get(f"{comp.get('id')}.value_field")
     if date_field is None or val_field is None:
         return _empty_figure(comp.get("title", "Line Chart - No data"))
+
     df2 = df.copy()
     df2[date_field] = pd.to_datetime(df2[date_field])
     freq = comp.get("time_granularity", "M")
     df2 = df2.set_index(date_field).resample(freq)[val_field].sum().reset_index()
     fig = px.line(df2, x=date_field, y=val_field, title=comp.get("title"))
-    return fig
-
+    return _scale_chart(fig)
 
 def generate_bar(df: pd.DataFrame, comp: Dict, mapping: Dict):
     grp = mapping.get(comp.get("group_field")) or mapping.get(f"{comp.get('id')}.group_field")
     val = mapping.get(comp.get("value_field")) or mapping.get(f"{comp.get('id')}.value_field")
     if grp is None or val is None:
         return _empty_figure(comp.get("title", "Bar Chart - No data"))
+
     df2 = df.copy()
     df2["abs_val"] = df2[val].abs()
     top_n = comp.get("top_n", 10)
     df2 = df2.groupby(grp)["abs_val"].sum().reset_index().sort_values("abs_val", ascending=False).head(top_n)
     fig = px.bar(df2, x=grp, y="abs_val", title=comp.get("title"))
-    return fig
-
+    return _scale_chart(fig)
 
 def generate_pie(df: pd.DataFrame, comp: Dict, mapping: Dict):
     grp = mapping.get(comp.get("group_field")) or mapping.get(f"{comp.get('id')}.group_field")
     val = mapping.get(comp.get("value_field")) or mapping.get(f"{comp.get('id')}.value_field")
     if grp is None or val is None:
         return _empty_figure(comp.get("title", "Pie Chart - No data"))
+
     df2 = df.copy()
     df2["abs_val"] = df2[val].abs()
     df2 = df2.groupby(grp)["abs_val"].sum().reset_index()
     fig = px.pie(df2, names=grp, values="abs_val", title=comp.get("title"))
-    return fig
+    return _scale_chart(fig)
 
 def generate_scatter(df, comp, mapping):
     x_field = mapping.get(comp.get("x_field", ""), comp.get("x_field"))
@@ -97,8 +104,7 @@ def generate_scatter(df, comp, mapping):
         size=size_field if size_field else None,
         title=comp.get("title", "Scatter Plot"),
     )
-    return fig
-
+    return _scale_chart(fig)
 
 def generate_histogram(df, comp, mapping):
     value_field = mapping.get(comp.get("value_field", ""), comp.get("value_field"))
@@ -111,8 +117,7 @@ def generate_histogram(df, comp, mapping):
         nbins=comp.get("bins", 20),
         title=comp.get("title", "Histogram"),
     )
-    return fig
-
+    return _scale_chart(fig)
 
 def generate_heatmap(df, comp, mapping):
     x_field = mapping.get(comp.get("x_field", ""), comp.get("x_field"))
@@ -135,7 +140,7 @@ def generate_heatmap(df, comp, mapping):
         title=comp.get("title", "Heatmap"),
         aspect="auto"
     )
-    return fig
+    return _scale_chart(fig)
 
 # ---------- Extensible Chart Loader ----------
 def generate_chart(df: pd.DataFrame, comp: Dict, mapping: Dict):
@@ -150,7 +155,7 @@ def generate_chart(df: pd.DataFrame, comp: Dict, mapping: Dict):
         "bar": generate_bar,
         "pie": generate_pie,
         "scatter": generate_scatter,
-        "histogram": generate_histgram,
+        "histogram": generate_histogram,
         "heatmap": generate_heatmap
     }
 
